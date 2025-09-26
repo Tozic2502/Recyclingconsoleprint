@@ -5,11 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Recyclingconsoleprint.Service
-{
-    public interface IImagePredictionService
-    {
-        PredictionResult Predict(ImageData image);
-    }
+namespace Service;
 
+public interface IImagePredictionService
+{
+    PredictionResult Predict(ImageData image);
 }

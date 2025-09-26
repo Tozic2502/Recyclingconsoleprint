@@ -1,22 +1,27 @@
-﻿using Domain;
+﻿using Service;
 using Infrastructure;
+using Domain;
 using System;
-using System.IO;
 
-class Program
+namespace RecyclingConsolePrint
 {
-    static void Main(string[] args)
+    class Program
     {
-        var modelPath = @"MLModels/saved_model.pb";
-        var labelsPath = @"MLModels/labels.txt";
-        var imagesFolder = @"ImagesToPredict";
-        var outputCsv = @"predictions.csv";
+        static void Main(string[] args)
+        {
+            var modelPath = @"MLModels/saved_model.pb";
+            var labelsPath = @"MLModels/labels.txt";
+            var imagesFolder = @"ImagesToPredict"; // Opret denne mappe og put billeder ind
+            var outputCsv = @"predictions.csv";
 
-        var predictionService = new TeachableMachinePredictionService(modelPath, labelsPath);
-        var batchPrediction = new BatchPrediction(predictionService);
+            // ML-service
+            IImagePredictionService predictionService = (IImagePredictionService)new TeachableMachinePredictionService(modelPath, labelsPath);
 
-        batchPrediction.PredictFolder(imagesFolder, outputCsv);
+            // Batch prediction
+            var batchPrediction = new BatchPrediction(predictionService);
+            batchPrediction.PredictFolder(imagesFolder, outputCsv);
 
-        Console.WriteLine("Færdig! Resultater gemt til " + outputCsv);
+            Console.WriteLine("Færdig! Resultater gemt til " + outputCsv);
+        }
     }
 }

@@ -2,8 +2,9 @@
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using Microsoft.ML.Transforms.Image;
-using Recyclingconsoleprint.Service;
+using Service;
 
+namespace Infrastructure;
 public class TeachableMachinePredictionService : IImagePredictionService
 {
     private readonly MLContext _mlContext;
