@@ -8,10 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="Microsoft.ML" Version="4.0.2" />
     <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="4.0.2" />
     <PackageReference Include="Microsoft.ML.Vision" Version="4.0.2" />
     <PackageReference Include="SciSharp.TensorFlow.Redist" Version="2.16.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="MLModels\" />
   </ItemGroup>
 
 </Project>

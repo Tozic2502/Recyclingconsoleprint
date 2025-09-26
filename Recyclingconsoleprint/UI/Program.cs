@@ -5,30 +5,18 @@ using System.IO;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        var baseDir = @"C:\DATA";
-        var testImage = @"C:\DATA\unknown\cardboard5.jpg";
-        var classes = new[] { "papir", "pap", "plast", "metal", "glass" };
+        var modelPath = @"MLModels/saved_model.pb";
+        var labelsPath = @"MLModels/labels.txt";
+        var imagesFolder = @"ImagesToPredict";
+        var outputCsv = @"predictions.csv";
 
-        var trainer = new ModelTrainer();
-        var (model, metrics) = trainer.TrainAndEvaluate(baseDir, classes);
+        var predictionService = new TeachableMachinePredictionService(modelPath, labelsPath);
+        var batchPrediction = new BatchPrediction(predictionService);
 
-        // Print metrics
-        Console.WriteLine("\n=== Model Metrics ===");
-        Console.WriteLine($"MicroAccuracy: {metrics.MicroAccuracy:P2}");
-        Console.WriteLine($"MacroAccuracy: {metrics.MacroAccuracy:P2}");
-        Console.WriteLine(metrics.ConfusionMatrix.GetFormattedConfusionTable());
+        batchPrediction.PredictFolder(imagesFolder, outputCsv);
 
-        // Save CSV
-        var csvPath = Path.Combine(baseDir, "confusion_matrix.csv");
-        CsvExporter.SaveConfusionMatrix(csvPath, classes, metrics.ConfusionMatrix);
-        Console.WriteLine($"\nConfusion matrix gemt til: {csvPath}");
-
-        // Test prediction
-        var prediction = trainer.Predict(model, testImage);
-        Console.WriteLine("\n=== Klassifikation ===");
-        Console.WriteLine($"Billede: {testImage}");
-        Console.WriteLine($"Forudsagt label: {prediction.PredictedLabel}");
+        Console.WriteLine("Færdig! Resultater gemt til " + outputCsv);
     }
 }
