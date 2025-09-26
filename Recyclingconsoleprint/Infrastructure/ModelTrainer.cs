@@ -1,6 +1,7 @@
 ﻿using Domain;
 using Microsoft.ML;
 using Microsoft.ML.Data;
+using Microsoft.ML.Transforms.Image;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,7 +47,6 @@ public class ModelTrainer
             _ml.Transforms.Conversion.MapValueToKey("LabelAsKey", nameof(ImageData.Label))
               .Append(_ml.Transforms.LoadImages("Image", "", nameof(ImageData.ImagePath)))
               .Append(_ml.Transforms.ResizeImages("Image", 224, 224))
-              .Append(_ml.Transforms.ExtractPixels("Image"))
               .Append(_ml.MulticlassClassification.Trainers.ImageClassification(
                         featureColumnName: "Image",
                         labelColumnName: "LabelAsKey",

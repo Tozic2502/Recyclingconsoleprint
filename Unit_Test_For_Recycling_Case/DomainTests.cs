@@ -1,6 +1,7 @@
-﻿
+﻿using Domain;
+using Xunit;
 
-public class WasteSortingTest
+public class DomainTests
     {
         [Fact]
         public void ImageData_ShouldStorePathAndLabel()
