@@ -50,15 +50,24 @@ public class ModelTrainer
         var validData = _ml.Data.LoadFromEnumerable(validList);
 
         var pipeline =
-            _ml.Transforms.Conversion.MapValueToKey("LabelAsKey", nameof(ImageData.Label))
-              .Append(_ml.Transforms.LoadImages("Image", "", nameof(ImageData.ImagePath)))
-              .Append(_ml.Transforms.ResizeImages("Image", 224, 224))
-              .Append(_ml.Transforms.ExtractPixels("Image"))
-              .Append(_ml.MulticlassClassification.Trainers.ImageClassification(
-                        featureColumnName: "Image",
-                        labelColumnName: "LabelAsKey",
-                        validationSet: validData))
-              .Append(_ml.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"));
+    _ml.Transforms.Conversion.MapValueToKey("LabelAsKey", nameof(ImageData.Label))
+      .Append(_ml.Transforms.LoadImages(
+                outputColumnName: "Image",
+                imageFolder: "",
+                inputColumnName: nameof(ImageData.ImagePath)))
+      .Append(_ml.Transforms.ResizeImages(
+                outputColumnName: "Image",
+                imageWidth: 224,
+                imageHeight: 224))
+      .Append(_ml.Transforms.ExtractPixels(
+                outputColumnName: "Pixels",
+                inputColumnName: "Image"))
+      .Append(_ml.MulticlassClassification.Trainers.SdcaMaximumEntropy(
+                labelColumnName: "LabelAsKey",
+                featureColumnName: "Pixels"))
+      .Append(_ml.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"));
+
+
 
         Console.WriteLine("Træner modellen...");
         var model = pipeline.Fit(trainData);
