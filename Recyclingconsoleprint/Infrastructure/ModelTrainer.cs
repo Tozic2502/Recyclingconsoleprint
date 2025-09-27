@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+
 namespace Infrastructure;
 
 public class ModelTrainer
@@ -29,11 +30,17 @@ public class ModelTrainer
 
             if (Directory.Exists(trainDir))
                 foreach (var f in Directory.EnumerateFiles(trainDir, "*.*", SearchOption.AllDirectories))
-                    trainList.Add(new ImageData { ImagePath = f, Label = cls });
+                {
+                    Console.WriteLine($"Found training image: {f}");
+                    trainList.Add(new ImageData { ImagePath = f, Label = cls, Image = File.ReadAllBytes(f) });
+                }
 
             if (Directory.Exists(validDir))
                 foreach (var f in Directory.EnumerateFiles(validDir, "*.*", SearchOption.AllDirectories))
+                {
+                    Console.WriteLine($"Found validation image: {f}");
                     validList.Add(new ImageData { ImagePath = f, Label = cls });
+                }
         }
 
         if (trainList.Count == 0 || validList.Count == 0)
