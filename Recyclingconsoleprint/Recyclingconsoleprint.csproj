@@ -18,27 +18,4 @@
     <PackageReference Include="TensorFlow.NET" Version="0.110.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="model\assets\" />
-    <Folder Include="model\model.savedmodel\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="model\labels.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="model\model.pb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="model\model.pb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="model\variables\variables.data-00000-of-00001">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="model\variables\variables.index">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
