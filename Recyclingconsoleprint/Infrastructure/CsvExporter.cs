@@ -1,28 +1,22 @@
-﻿using Microsoft.ML.Data;
-using System.IO;
+﻿using Domain;
+using System.Globalization;
+using System.Text;
 
-namespace Infrastructure;
-
-public static class CsvExporter
+namespace Infrastructure
 {
-    public static void SaveConfusionMatrix(string path, string[] classes, ConfusionMatrix cm)
+    public class CsvExporter
     {
-        using (var writer = new StreamWriter(path))
+        public void ExportToCsv(IEnumerable<PredictionResult> results, string outputPath)
         {
-            writer.Write("Actual/Predicted");
-            foreach (var cls in classes)
-                writer.Write($",{cls}");
-            writer.WriteLine();
+            var sb = new StringBuilder();
+            sb.AppendLine("ImagePath,Label,Probability");
 
-            for (int i = 0; i < cm.Counts.Count; i++)
+            foreach (var result in results)
             {
-                writer.Write(classes[i]);
-                for (int j = 0; j < cm.Counts[i].Count; j++)
-                {
-                    writer.Write($",{cm.Counts[i][j]}");
-                }
-                writer.WriteLine();
+                sb.AppendLine($"{result.ImagePath},{result.Label},{result.Probability.ToString("F4", CultureInfo.InvariantCulture)}");
             }
+
+            File.WriteAllText(outputPath, sb.ToString(), Encoding.UTF8);
         }
     }
 }

@@ -1,27 +1,30 @@
-﻿using Service;
+﻿using Domain;
 using Infrastructure;
-using Domain;
-using System;
+using Service;
 
 namespace RecyclingConsolePrint
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            var modelPath = @"MLModels/saved_model.pb";
-            var labelsPath = @"MLModels/labels.txt";
-            var imagesFolder = @"ImagesToPredict"; // Opret denne mappe og put billeder ind
-            var outputCsv = @"predictions.csv";
+            var modelPath = Path.Combine(Environment.CurrentDirectory, "model", "model.pb");
+            var labelsPath = Path.Combine(Environment.CurrentDirectory, "model", "labels.txt");
 
-            // ML-service
-            IImagePredictionService predictionService = (IImagePredictionService)new TeachableMachinePredictionService(modelPath, labelsPath);
+            var service = new TeachableMachinePredictionService(modelPath, labelsPath);
 
-            // Batch prediction
-            var batchPrediction = new BatchPrediction(predictionService);
-            batchPrediction.PredictFolder(imagesFolder, outputCsv);
+            //// Første gang: find navne i konsollen → kopier ind her
+            //service.ConfigureTensors("serving_default_input_1:0", "StatefulPartitionedCall:0");
 
-            Console.WriteLine("Færdig! Resultater gemt til " + outputCsv);
+            //// Test
+            //var image = new ImageData { ImagePath = "C:\\DATA\\testimage.jpg.jpg" };
+            //var result = service.Predict(image);
+
+            //Console.WriteLine($"📸 {result.ImagePath}");
+            //Console.WriteLine($"🧾 Label: {result.Label}");
+            //Console.WriteLine($"📊 Confidence: {result.Probability:P2}");
+
+
         }
     }
 }
