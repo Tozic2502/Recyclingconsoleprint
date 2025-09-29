@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-
 namespace Infrastructure;
 
 public class ModelTrainer
@@ -17,62 +16,62 @@ public class ModelTrainer
         _ml = new MLContext(seed: 1);
     }
 
-    public (ITransformer model, MulticlassClassificationMetrics metrics) TrainAndEvaluate(
-        string baseDir, string[] classes)
+    public (ITransformer model, MulticlassClassificationMetrics metrics) LoadTensorFlowModel(
+        string baseDir, string[] classes, string modelPath,
+        string inputName, string outputName)
     {
-        var trainList = new List<ImageData>();
-        var validList = new List<ImageData>();
+        var imageList = new List<ImageData>();
 
         foreach (var cls in classes)
         {
-            var trainDir = Path.Combine(baseDir, cls, "train");
-            var validDir = Path.Combine(baseDir, cls, "model_test");
-
-            if (Directory.Exists(trainDir))
-                foreach (var f in Directory.EnumerateFiles(trainDir, "*.*", SearchOption.AllDirectories))
+            var testDir = Path.Combine(baseDir, cls, "model_test"); // brug dine valid/test-billeder
+            if (Directory.Exists(testDir))
+            {
+                foreach (var f in Directory.EnumerateFiles(testDir, "*.*", SearchOption.AllDirectories))
                 {
-                    Console.WriteLine($"Found training image: {f}");
-                    trainList.Add(new ImageData { ImagePath = f, Label = cls, Image = File.ReadAllBytes(f) });
+                    imageList.Add(new ImageData { ImagePath = f, Label = cls });
                 }
-
-            if (Directory.Exists(validDir))
-                foreach (var f in Directory.EnumerateFiles(validDir, "*.*", SearchOption.AllDirectories))
-                {
-                    Console.WriteLine($"Found validation image: {f}");
-                    validList.Add(new ImageData { ImagePath = f, Label = cls });
-                }
+            }
         }
 
-        if (trainList.Count == 0 || validList.Count == 0)
-            throw new Exception("Ingen billeder fundet i train/model_test!");
+        if (imageList.Count == 0)
+            throw new Exception("Ingen billeder fundet i model_test-mapperne!");
 
-        var trainData = _ml.Data.LoadFromEnumerable(trainList);
-        var validData = _ml.Data.LoadFromEnumerable(validList);
+        var data = _ml.Data.LoadFromEnumerable(imageList);
 
-        var pipeline =
-    _ml.Transforms.Conversion.MapValueToKey("LabelAsKey", nameof(ImageData.Label))
-      .Append(_ml.Transforms.LoadImages(
-                outputColumnName: "Image",
-                imageFolder: "",
-                inputColumnName: nameof(ImageData.ImagePath)))
-      .Append(_ml.Transforms.ResizeImages(
-                outputColumnName: "Image",
-                imageWidth: 224,
-                imageHeight: 224))
-      .Append(_ml.Transforms.ExtractPixels(
-                outputColumnName: "Pixels",
-                inputColumnName: "Image"))
-      .Append(_ml.MulticlassClassification.Trainers.SdcaMaximumEntropy(
-                labelColumnName: "LabelAsKey",
-                featureColumnName: "Pixels"))
-      .Append(_ml.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"));
+        // === PIPELINE ===
+        var pipeline = _ml.Transforms.LoadImages(
+                            outputColumnName: inputName,
+                            imageFolder: "",
+                            inputColumnName: nameof(ImageData.ImagePath))
+            .Append(_ml.Transforms.ResizeImages(
+                            outputColumnName: inputName,
+                            imageWidth: 224,
+                            imageHeight: 224,
+                            inputColumnName: inputName))
+            .Append(_ml.Transforms.ExtractPixels(
+                            outputColumnName: inputName,
+                            inputColumnName: inputName))
 
+            // Kør TensorFlow-model
+            .Append(_ml.Model.LoadTensorFlowModel(modelPath)
+                    .ScoreTensorFlowModel(
+                        outputColumnNames: new[] { outputName },
+                        inputColumnNames: new[] { inputName },
+                        addBatchDimensionInput: true))
 
+            // Klassifikation ovenpå TensorFlow-output
+            .Append(_ml.Transforms.Conversion.MapValueToKey("LabelAsKey", nameof(ImageData.Label)))
+            .Append(_ml.MulticlassClassification.Trainers.LbfgsMaximumEntropy(
+                        labelColumnName: "LabelAsKey",
+                        featureColumnName: outputName))
+            .Append(_ml.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"));
 
-        Console.WriteLine("Træner modellen...");
-        var model = pipeline.Fit(trainData);
+        Console.WriteLine("Bygger pipeline ovenpå TensorFlow...");
+        var model = pipeline.Fit(data);
 
-        var predictions = model.Transform(validData);
+        // Evaluer på valid-data
+        var predictions = model.Transform(data);
         var metrics = _ml.MulticlassClassification.Evaluate(predictions, labelColumnName: "LabelAsKey");
 
         return (model, metrics);
@@ -84,4 +83,3 @@ public class ModelTrainer
         return engine.Predict(new ImageData { ImagePath = imagePath });
     }
 }
-

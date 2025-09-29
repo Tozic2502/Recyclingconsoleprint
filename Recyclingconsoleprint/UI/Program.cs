@@ -12,7 +12,12 @@ class Program
         var classes = new[] { "papir", "pap", "plast", "metal", "glass" };
 
         var trainer = new ModelTrainer();
-        var (model, metrics) = trainer.TrainAndEvaluate(baseDir, classes);
+        var (model, metrics) = trainer.LoadTensorFlowModel(
+            baseDir, classes,
+            @"C:\DATA\my_tf_model\saved_model.pb",
+            inputName: "serving_default_input_1",    // blå boks i Netron
+            outputName: "StatefulPartitionedCall"    // grøn boks i Netron
+        );
 
         // Print metrics
         Console.WriteLine("\n=== Model Metrics ===");
