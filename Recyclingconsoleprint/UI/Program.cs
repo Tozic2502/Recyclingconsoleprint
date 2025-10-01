@@ -8,7 +8,7 @@ class Program
     static void Main()
     {
         var baseDir = @"C:\DATA";
-        var testImage = @"C:\DATA\unknown\cardboard5.jpg";
+        var testImage = @"C:\DATA\unknown\";
         var classes = new[] { "papir", "pap", "plast", "metal", "glass" };
 
         var trainer = new ModelTrainer();
